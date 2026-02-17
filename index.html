@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Carousel Downloader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .input-section {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+
+        button {
+            background: #0066cc;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        button:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+
+        .status {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status.active {
+            display: block;
+        }
+
+        .status-text {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #0066cc;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .error {
+            background: #ff3333;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .images-grid img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .note {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Carousel Downloader</h1>
+        
+        <div class="input-section">
+            <label for="url">Gallery URL</label>
+            <input 
+                type="text" 
+                id="url" 
+                placeholder="https://www.wwe.com/gallery/..."
+                value="https://www.wwe.com/gallery/the-incredible-images-of-smackdown-feb-13-2026-photos#fid-40722187"
+            >
+            
+            <button id="fetchBtn">Fetch & Download Images</button>
+            
+            <div class="note">
+                Note: This will attempt to download all images from the carousel. Your browser will handle the download location based on your settings.
+            </div>
+            
+            <div class="error" id="error"></div>
+        </div>
+
+        <div class="status" id="status">
+            <div class="status-text" id="statusText">Initializing...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div id="imagesContainer"></div>
+    </div>
+
+    <script>
+        const fetchBtn = document.getElementById('fetchBtn');
+        const urlInput = document.getElementById('url');
+        const statusDiv = document.getElementById('status');
+        const statusText = document.getElementById('statusText');
+        const progressFill = document.getElementById('progressFill');
+        const errorDiv = document.getElementById('error');
+        const imagesContainer = document.getElementById('imagesContainer');
+
+        fetchBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('Please enter a URL');
+                return;
+            }
+
+            errorDiv.classList.remove('active');
+            statusDiv.classList.add('active');
+            fetchBtn.disabled = true;
+            imagesContainer.innerHTML = '';
+
+            try {
+                statusText.textContent = 'Fetching page...';
+                progressFill.style.width = '10%';
+
+                // Fetch the page
+                const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+                const html = await response.text();
+
+                // Parse HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Extract images from the carousel
+                const images = [];
+                
+                // WWE galleries typically use specific selectors
+                const imgElements = doc.querySelectorAll('img[src*="wwe.com"]');
+                
+                imgElements.forEach(img => {
+                    let src = img.src || img.getAttribute('data-src') || img.getAttribute('data-lazy-src');
+                    if (src && !src.includes('logo') && !src.includes('icon')) {
+                        // Get highest quality version
+                        src = src.replace(/\/w\/\d+/, '/w/1200').replace(/\/h\/\d+/, '/h/1200');
+                        if (!images.includes(src)) {
+                            images.push(src);
+                        }
+                    }
+                });
+
+                if (images.length === 0) {
+                    throw new Error('No images found. The page structure might have changed.');
+                }
+
+                statusText.textContent = `Found ${images.length} images. Starting download...`;
+                progressFill.style.width = '30%';
+
+                // Download images
+                for (let i = 0; i < images.length; i++) {
+                    try {
+                        await downloadImage(images[i], i + 1);
+                        const progress = 30 + ((i + 1) / images.length) * 70;
+                        progressFill.style.width = `${progress}%`;
+                        statusText.textContent = `Downloading ${i + 1} of ${images.length}...`;
+                        
+                        // Small delay to avoid overwhelming the browser
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (err) {
+                        console.error(`Failed to download image ${i + 1}:`, err);
+                    }
+                }
+
+                progressFill.style.width = '100%';
+                statusText.textContent = `✓ Successfully downloaded ${images.length} images!`;
+                
+                setTimeout(() => {
+                    statusDiv.classList.remove('active');
+                    fetchBtn.disabled = false;
+                }, 3000);
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+                statusDiv.classList.remove('active');
+                fetchBtn.disabled = false;
+            }
+        });
+
+        async function downloadImage(url, index) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                
+                // Extract filename or create one
+                const urlParts = url.split('/');
+                const filename = urlParts[urlParts.length - 1].split('?')[0] || `image-${index}.jpg`;
+                link.download = `image-${String(index).padStart(3, '0')}-${filename}`;
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                throw new Error(`Failed to download image ${index}`);
+            }
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
