@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WWE Photo Downloader - Bookmarklet</title>
+    <title>WWE Photo Downloader</title>
     <style>
         * {
             margin: 0;
@@ -81,28 +81,6 @@
             font-weight: 600;
         }
 
-        .demo {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 15px;
-            border-left: 3px solid #0066cc;
-        }
-
-        .demo img {
-            max-width: 100%;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-
-        code {
-            background: #1a1a1a;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-            color: #0099ff;
-        }
-
         .note {
             background: #2a2a2a;
             border-left: 3px solid #2e7d32;
@@ -126,18 +104,26 @@
         strong {
             color: #fff;
         }
+
+        code {
+            background: #1a1a1a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #0099ff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>WWEPhotos Bookmarklet</h1>
+        <h1>WWEPhotos Downloader</h1>
         <p class="subtitle">Fast & Simple - No CORS Issues</p>
         
         <div class="step">
             <h2>Step 1: Add Bookmarklet to Bookmarks Bar</h2>
             <p>Drag this button to your bookmarks bar:</p>
             
-            <a href="javascript:(async function(){const loadingDiv=document.createElement('div');loadingDiv.style.cssText='position:fixed;top:20px;right:20px;background:#0066cc;color:#fff;padding:15px 25px;border-radius:8px;z-index:999999;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,0.3);';loadingDiv.textContent='Loading all images...';document.body.appendChild(loadingDiv);const originalScroll=window.scrollY;let lastHeight=0;let scrollAttempts=0;while(scrollAttempts<50){window.scrollTo(0,document.body.scrollHeight);await new Promise(r=>setTimeout(r,300));const currentHeight=document.body.scrollHeight;if(currentHeight===lastHeight){scrollAttempts++;if(scrollAttempts>=3)break;}else{scrollAttempts=0;}lastHeight=currentHeight;loadingDiv.textContent=`Loading... (${document.querySelectorAll('img[src*=\"wwe.com\"]').length} images found)`;}window.scrollTo(0,originalScroll);await new Promise(r=>setTimeout(r,500));const imgs=new Set();document.querySelectorAll('img').forEach(img=>{let src=img.src||img.getAttribute('data-src')||img.getAttribute('data-lazy-src')||img.getAttribute('data-image');if(src&&src.includes('wwe.com')&&!src.includes('logo')&&!src.includes('icon')&&!src.includes('avatar')&&!src.includes('thumbnail')){src=src.replace(/\/w\/\d+/,'/w/2000').replace(/\/h\/\d+/,'/h/2000');imgs.add(src)}});document.querySelectorAll('[srcset]').forEach(el=>{const srcset=el.getAttribute('srcset');if(srcset){srcset.split(',').forEach(s=>{const url=s.trim().split(' ')[0];if(url.includes('wwe.com')&&!url.includes('logo')&&!url.includes('thumbnail'))imgs.add(url)})}});loadingDiv.remove();const arr=Array.from(imgs);if(arr.length===0){alert('No images found!');return}const overlay=document.createElement('div');overlay.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;overflow:auto;padding:20px';const content=document.createElement('div');content.style.cssText='max-width:1200px;margin:0 auto;color:#fff';content.innerHTML=`<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;'><h2 style='margin:0;'>Found ${arr.length} Images</h2><div><button id='dlAll' style='background:#2e7d32;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:10px;'>Download All</button><button id='closeBtn' style='background:#d32f2f;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-weight:600;cursor:pointer;'>Close</button></div></div><div id='grid' style='display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px;'></div>`;overlay.appendChild(content);document.body.appendChild(overlay);const grid=document.getElementById('grid');arr.forEach((url,i)=>{const card=document.createElement('div');card.style.cssText='background:#2a2a2a;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform 0.2s;';card.innerHTML=`<img src='${url}' style='width:100%;height:200px;object-fit:cover;display:block;'><div style='padding:10px;text-align:center;font-size:14px;'>#${i+1}</div>`;card.onclick=async()=>{const a=document.createElement('a');a.href=url;a.download=`wwe-${String(i+1).padStart(3,'0')}.jpg`;a.click()};card.onmouseover=()=>card.style.transform='scale(1.05)';card.onmouseout=()=>card.style.transform='scale(1)';grid.appendChild(card)});document.getElementById('closeBtn').onclick=()=>overlay.remove();document.getElementById('dlAll').onclick=async()=>{const btn=document.getElementById('dlAll');btn.disabled=true;btn.textContent='Downloading...';for(let i=0;i<arr.length;i++){const a=document.createElement('a');a.href=arr[i];a.download=`wwe-${String(i+1).padStart(3,'0')}.jpg`;a.click();await new Promise(r=>setTimeout(r,200))}btn.disabled=false;btn.textContent='Download All'}})();" class="bookmarklet">📸 WWE Photos</a>
+            <a href='javascript:(async function(){const d=document.createElement("div");d.style.cssText="position:fixed;top:20px;right:20px;background:%230066cc;color:%23fff;padding:15px 25px;border-radius:8px;z-index:999999;font-weight:600";d.textContent="Loading images...";document.body.appendChild(d);const s=window.scrollY;let h=0,a=0;while(a<50){window.scrollTo(0,document.body.scrollHeight);await new Promise(r=>setTimeout(r,300));const n=document.body.scrollHeight;if(n===h){a++;if(a>=3)break}else a=0;h=n;d.textContent=`Loading... (${document.querySelectorAll("img[src*=wwe]").length} found)`}window.scrollTo(0,s);await new Promise(r=>setTimeout(r,500));const imgs=new Set;document.querySelectorAll("img").forEach(i=>{let src=i.src||i.getAttribute("data-src")||i.getAttribute("data-lazy-src");if(src&&src.includes("wwe.com")&&!src.includes("logo")&&!src.includes("icon")&&!src.includes("avatar")){src=src.replace(/\/w\/\d+/,"/w/2000").replace(/\/h\/\d+/,"/h/2000");imgs.add(src)}});document.querySelectorAll("[srcset]").forEach(e=>{const st=e.getAttribute("srcset");if(st)st.split(",").forEach(s=>{const u=s.trim().split(" ")[0];if(u.includes("wwe.com")&&!u.includes("logo"))imgs.add(u)})});d.remove();const arr=[...imgs];if(!arr.length){alert("No images found!");return}const o=document.createElement("div");o.style.cssText="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;overflow:auto;padding:20px";o.innerHTML=`<div style="max-width:1200px;margin:0 auto;color:%23fff"><div style="display:flex;justify-content:space-between;margin-bottom:20px"><h2>Found ${arr.length} Images</h2><div><button id="da" style="background:%232e7d32;color:%23fff;border:none;padding:12px 24px;border-radius:6px;font-weight:600;cursor:pointer;margin-right:10px">Download All</button><button id="cb" style="background:%23d32f2f;color:%23fff;border:none;padding:12px 24px;border-radius:6px;font-weight:600;cursor:pointer">Close</button></div></div><div id="g" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px"></div></div>`;document.body.appendChild(o);const g=o.querySelector("#g");arr.forEach((url,i)=>{const c=document.createElement("div");c.style.cssText="background:%232a2a2a;border-radius:8px;overflow:hidden;cursor:pointer";c.innerHTML=`<img src="${url}" style="width:100%;height:200px;object-fit:cover"><div style="padding:10px;text-align:center">%23${i+1}</div>`;c.onclick=()=>{const a=document.createElement("a");a.href=url;a.download=`wwe-${String(i+1).padStart(3,"0")}.jpg`;a.click()};g.appendChild(c)});o.querySelector("#cb").onclick=()=>o.remove();o.querySelector("#da").onclick=async()=>{const b=o.querySelector("#da");b.disabled=true;b.textContent="Downloading...";for(let i=0;i<arr.length;i++){const a=document.createElement("a");a.href=arr[i];a.download=`wwe-${String(i+1).padStart(3,"0")}.jpg`;a.click();await new Promise(r=>setTimeout(r,200))}b.disabled=false;b.textContent="Download All"}})();' class="bookmarklet">📸 WWE Photos</a>
             
             <div class="instruction">
                 ⚠️ Drag the button above to your bookmarks bar (don't click it here!)
@@ -153,29 +139,25 @@
         <div class="step">
             <h2>Step 2: Use It</h2>
             <ol>
-                <li>Go to any WWE gallery page (like <a href="https://www.wwe.com/gallery/the-incredible-images-of-smackdown-feb-13-2026-photos#fid-40722187" target="_blank" style="color: #0066cc;">this one</a>)</li>
+                <li>Go to any WWE gallery page</li>
                 <li>Click the <strong>📸 WWE Photos</strong> bookmark in your bookmarks bar</li>
-                <li>Wait while it auto-scrolls to load all images (you'll see a blue loading indicator)</li>
-                <li>A popup will show all images - click individual images or "Download All"</li>
+                <li>Wait while it auto-scrolls to load all images (blue indicator in top-right)</li>
+                <li>A popup shows all images - click "Download All" or individual images</li>
                 <li>Images save to your Downloads folder automatically</li>
             </ol>
 
-            <div class="note" style="margin-top: 20px; border-color: #0066cc;">
-                <strong>✨ Why this works:</strong><br>
-                The bookmarklet runs directly on the WWE page, automatically scrolls to load all lazy-loaded images, then lets you download them all. No CORS restrictions, no extensions needed!
+            <div class="note" style="border-color: #0066cc;">
+                <strong>✨ How it works:</strong><br>
+                The bookmarklet runs directly on the WWE page, automatically scrolls to load all lazy-loaded images, then lets you download them all. No CORS issues, no extensions needed!
             </div>
         </div>
 
         <div class="step">
             <h2>Tips</h2>
-            <p><strong>Browser may ask for permission:</strong> First time you click "Download All", your browser might ask if you want to allow multiple downloads. Click "Allow".</p>
-            <p><strong>Works on any WWE gallery:</strong> The bookmarklet will work on any WWE gallery page, not just SmackDown.</p>
-            <p><strong>High quality:</strong> Images are downloaded at 2000px resolution automatically.</p>
+            <p><strong>Browser permission:</strong> First time you click "Download All", your browser might ask if you want to allow multiple downloads. Click "Allow".</p>
+            <p><strong>Works on any WWE gallery:</strong> SmackDown, Raw, NXT, PLEs - any gallery page.</p>
+            <p><strong>High quality:</strong> Downloads at 2000px resolution automatically.</p>
         </div>
     </div>
-
-    <script>
-        console.log('WWE Photo Downloader - Bookmarklet version loaded!');
-    </script>
 </body>
 </html>
